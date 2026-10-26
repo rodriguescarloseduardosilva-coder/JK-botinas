@@ -61,6 +61,10 @@ O cancelamento exige justificativa de 15 a 255 caracteres e só muda a situaçã
 
 ## Verificação técnica
 
-Use Node 20 ou superior: `npm ci` e `npm test`. A suíte cobre autenticação, cálculo decimal, reservas concorrentes/versões, RLS e estados em PostgreSQL/PGlite, segurança dos documentos e fluxos administrativos em jsdom. Não realiza chamadas fiscais reais.
+Use Node 24.x: `npm ci`, `npm test` e `npm run build`. A suíte cobre autenticação, cálculo decimal, reservas concorrentes/versões, RLS e estados em PostgreSQL/PGlite, segurança dos documentos, fluxos administrativos em jsdom e o isolamento dos arquivos públicos. Não realiza chamadas fiscais reais.
+
+O build gera `public/` com uma lista explícita dos HTML, CSS e JavaScript do navegador e imagens de `Fotos/`. Vercel publica somente essa saída estática; `api/` continua sendo a função Node e importa `lib/` no servidor. Código do servidor, testes, SQL, documentação, variáveis de ambiente e certificados não são copiados para a saída pública. Não adicione `lib/` a uma exclusão de upload: a função precisa desses módulos no build.
+
+`public/` é gerada novamente a cada build e não deve ser versionada. Um checkout parcial sem `Fotos/` gera um aviso e não inclui fotos locais; use o repositório completo, com essa pasta, na publicação para preservar as imagens existentes. O build local desta preparação pode validar as páginas e o isolamento dos arquivos mesmo sem os aproximadamente 94 MB de fotos do repositório.
 
 Esta alteração foi construída a partir de `main`, separada da PR Pix. Caso ambas sejam incorporadas, preserve os dois endpoints, as migrações de cada módulo, scripts/testes e variáveis de ambiente ao resolver conflitos em `package.json`, `vercel.json`, `.env.example` e arquivos do painel. O módulo fiscal não confirma pagamento nem dá baixa de estoque.

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "commonjs",
-  "scripts": { "test": "node --test" },
-  "engines": { "node": ">=20" },
+  "scripts": { "build": "node scripts/build.cjs", "test": "node --test" },
+  "engines": { "node": "24.x" },
   "devDependencies": { "@electric-sql/pglite": "0.3.14", "jsdom": "26.1.0" }
 }

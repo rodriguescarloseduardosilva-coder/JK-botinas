@@ -1,4 +1,7 @@
 {
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
   "functions": {
     "api/fiscal.js": { "maxDuration": 120 }
   }
