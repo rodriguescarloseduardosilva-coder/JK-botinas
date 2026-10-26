@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="admin-orders.css">
+    <link rel="stylesheet" href="pix.css">
 </head>
 
 <body>
@@ -73,11 +74,11 @@
                 <div>
                     <p class="pedidos-sobretitulo">Atendimento</p>
                     <h2 id="pedidosTitulo">Pedidos dos clientes</h2>
-                    <p>Confira os dados e confirme a venda após acertar o pagamento com o cliente.</p>
+                    <p>Confira a disponibilidade, defina o frete e acompanhe a confirmação automática do Pix.</p>
                 </div>
                 <button class="btn btn-outline" type="button" onclick="carregarPedidosAdmin()">Atualizar pedidos</button>
             </div>
-            <p class="pedidos-aviso-fiscal">Emissor fiscal ainda não configurado. Confirmar a venda atualiza o estoque; não cobra o cliente nem emite nota fiscal.</p>
+            <p class="pedidos-aviso-fiscal">Pagamento somente por Pix automático. Salve o valor final para o cliente pagar em “Meus pedidos”. A confirmação de venda fica disponível após o banco confirmar o recebimento. A emissão fiscal ainda não está configurada.</p>
             <div class="pedidos-filtros">
                 <label for="filtroPedidos">Exibir</label>
                 <select id="filtroPedidos" onchange="paginaPedidos = 0; carregarPedidosAdmin();">
@@ -423,7 +424,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="pix.js"></script>
 <script src="admin.js"></script>
 
 </body>
 </html>
+

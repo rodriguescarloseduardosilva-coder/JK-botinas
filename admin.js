@@ -178,6 +178,9 @@ function montarPedidoAdmin(pedido) {
     const status = aguardando ? "Aguardando confirmação" : pedido.status === "confirmado" ? "Venda confirmada" : "Status indisponível";
     const enderecoLinha = [endereco.logradouro, endereco.numero, endereco.complemento].filter(Boolean).join(", ");
     const cidadeLinha = [endereco.bairro, endereco.cidade, endereco.uf].filter(Boolean).join(" · ");
+    const pix = pedido.pix;
+    const podePrepararPix = aguardando && !pedido.pixErro && (!pix || pix.status === 'pronta');
+    const pixPago = pix?.status === 'paga';
     return `
         <article class="pedido-card">
             <div class="pedido-resumo">
@@ -187,7 +190,7 @@ function montarPedidoAdmin(pedido) {
                     <p>${escapeHtml(formatarDataPedido(pedido.criado_em))}</p>
                 </div>
                 <div class="pedido-valor">
-                    <strong>${formatarPreco(pedido.total)}</strong>
+                    <strong>${formatarPreco(pix?.total ?? pedido.total)}</strong>
                     <span class="pedido-status ${aguardando ? "pedido-pendente" : "pedido-confirmado"}">${status}</span>
                 </div>
             </div>
@@ -226,9 +229,19 @@ function montarPedidoAdmin(pedido) {
                 <p class="pedido-fiscal">Nota fiscal: ${pedido.fiscal_status === "nao_configurado" ? "aguardando configuração do emissor fiscal." : "situação fiscal indisponível; confira no emissor antes de informar o cliente."}</p>
                 ${pedido.confirmado_em ? `<p>Venda confirmada em ${escapeHtml(formatarDataPedido(pedido.confirmado_em))}.</p>` : ""}
             </details>
+            <div class="pix-admin-status">
+                <p>Pix: ${escapeHtml(pedido.pixErro ? 'Integração indisponível. Confira a migração e a configuração do servidor.' : pix ? JKPix.label(pix.status) : pedido.status === 'confirmado' ? 'Pedido anterior à integração Pix.' : 'Defina o frete e o desconto para preparar o pagamento.')}</p>
+                ${pix ? `<p>Produtos: ${formatarPreco(pedido.total)} · Frete: ${formatarPreco(pix.frete)} · Desconto: ${formatarPreco(pix.desconto)}</p>` : ''}
+                ${podePrepararPix ? `<form class="pix-admin-form" data-preparar-pix="${escapeHtml(pedido.id)}">
+                    <label>Frete (R$)<input name="frete" type="number" min="0" max="999999.99" step="0.01" value="${escapeHtml(pix?.frete ?? 0)}" required></label>
+                    <label>Desconto (R$)<input name="desconto" type="number" min="0" max="999999.99" step="0.01" value="${escapeHtml(pix?.desconto ?? 0)}" required></label>
+                    <button class="btn btn-outline" type="submit">Salvar valor do Pix</button>
+                </form><p>O valor fica bloqueado após a solicitação da cobrança ao banco.</p>` : ''}
+                ${pix && ['solicitando', 'ativa', 'expirada'].includes(pix.status) ? `<button class="btn btn-outline" type="button" data-consultar-pix="${escapeHtml(pedido.id)}">Consultar pagamento no banco</button>` : ''}
+            </div>
             ${aguardando ? `<div class="pedido-acoes">
-                <p>Confirme somente após verificar a venda e o pagamento. O estoque será baixado.</p>
-                <button class="btn" type="button" data-confirmar-pedido="${escapeHtml(pedido.id)}">Confirmar venda</button>
+                <p>${pixPago ? 'O Pix foi confirmado pelo banco. Confira a disponibilidade antes de baixar o estoque.' : 'A confirmação da venda aguarda o recebimento do Pix pelo banco.'}</p>
+                <button class="btn" type="button" data-confirmar-pedido="${escapeHtml(pedido.id)}" ${pixPago ? '' : 'disabled'}>Confirmar venda</button>
             </div>` : ""}
         </article>`;
 }
@@ -259,9 +272,16 @@ async function carregarPedidosAdmin() {
             paginaPedidos--;
             return carregarPedidosAdmin();
         }
+        const cobrancas = pedidos.length ? await supabaseClient.from('jk_pix_cobrancas')
+            .select('pedido_id,status,total,frete,desconto').in('pedido_id', pedidos.map(pedido => pedido.id)) : {data: []};
+        if (!adminAutorizado || revisao !== revisaoPedidos) return;
+        const pagamentos = new Map((cobrancas.data || []).map(pix => [pix.pedido_id, pix]));
+        pedidos.forEach(pedido => { pedido.pix = pagamentos.get(pedido.id); pedido.pixErro = Boolean(cobrancas.error); });
         lista.innerHTML = pedidos.map(montarPedidoAdmin).join("");
+        lista.querySelectorAll('[data-preparar-pix]').forEach(form => form.addEventListener('submit', prepararPixAdmin));
+        lista.querySelectorAll('[data-consultar-pix]').forEach(botao => botao.addEventListener('click', () => consultarPixAdmin(botao)));
         lista.querySelectorAll("[data-confirmar-pedido]").forEach(botao => {
-            botao.disabled = pedidosEmConfirmacao.has(botao.dataset.confirmarPedido);
+            botao.disabled = botao.disabled || pedidosEmConfirmacao.has(botao.dataset.confirmarPedido);
             botao.addEventListener("click", () => confirmarPedidoAdmin(botao.dataset.confirmarPedido, botao));
         });
         mensagem.textContent = pedidos.length ? `${count ?? pedidos.length} pedido(s) encontrado(s).` : "Nenhum pedido encontrado.";
@@ -274,6 +294,45 @@ async function carregarPedidosAdmin() {
     }
 }
 
+async function prepararPixAdmin(event) {
+    event.preventDefault();
+    if (!adminAutorizado) return;
+    const form = event.currentTarget;
+    if (!form.reportValidity()) return;
+    const button = form.querySelector('button');
+    if (button.disabled) return;
+    const revisao = verificacaoAdmin;
+    button.disabled = true;
+    const mensagem = document.getElementById('pedidosMensagem');
+    try {
+        const {error} = await supabaseClient.rpc('jk_pix_preparar', {
+            p_pedido_id: form.dataset.prepararPix,
+            p_frete: Number(form.elements.frete.value), p_desconto: Number(form.elements.desconto.value)
+        });
+        if (!adminAutorizado || revisao !== verificacaoAdmin) return;
+        if (error) throw error;
+        await carregarPedidosAdmin();
+        if (adminAutorizado && revisao === verificacaoAdmin) mensagem.textContent = 'Valor final salvo. A geração do Pix depende da ativação da integração com o Banco do Brasil.';
+    } catch {
+        if (adminAutorizado && revisao === verificacaoAdmin) mensagem.textContent = 'Não foi possível salvar. Confira os valores, a configuração do banco de dados e se a cobrança já foi iniciada.';
+    } finally { button.disabled = false; }
+}
+
+async function consultarPixAdmin(button) {
+    if (!adminAutorizado || button.disabled) return;
+    const revisao = verificacaoAdmin;
+    button.disabled = true;
+    const mensagem = document.getElementById('pedidosMensagem');
+    try {
+        const pix = await JKPix.request(button.dataset.consultarPix, 'consultar');
+        if (!adminAutorizado || revisao !== verificacaoAdmin) return;
+        await carregarPedidosAdmin();
+        if (adminAutorizado && revisao === verificacaoAdmin) mensagem.textContent = 'Pix: ' + JKPix.label(pix.status) + '.';
+    } catch (error) {
+        if (adminAutorizado && revisao === verificacaoAdmin) mensagem.textContent = error.message;
+    } finally { button.disabled = false; }
+}
+
 function mudarPaginaPedidos(direcao) {
     if (!adminAutorizado) return;
     paginaPedidos = Math.max(0, paginaPedidos + direcao);
@@ -282,7 +341,7 @@ function mudarPaginaPedidos(direcao) {
 
 async function confirmarPedidoAdmin(id, botao) {
     if (!adminAutorizado || pedidosEmConfirmacao.has(id)) return;
-    if (!confirm("A venda e o pagamento deste pedido já foram conferidos? Ao confirmar, o estoque será baixado. Esta ação não realiza cobrança nem emite nota fiscal.")) return;
+    if (!confirm("Confirme a disponibilidade para preparar este pedido. O estoque será baixado; a emissão da nota fiscal depende da integração fiscal.")) return;
     const verificacao = verificacaoAdmin;
     pedidosEmConfirmacao.add(id);
     botao.disabled = true;
@@ -304,7 +363,8 @@ async function confirmarPedidoAdmin(id, botao) {
         }
     } finally {
         pedidosEmConfirmacao.delete(id);
-        botao.disabled = false;
+        // O estado autorizado para confirmar é recarregado do banco.
+        botao.disabled = true;
         botao.textContent = "Confirmar venda";
     }
 }
@@ -2594,3 +2654,4 @@ async function carregarDashboardEstoque() {
     }
 
 }
+
