@@ -1,0 +1,24 @@
+{
+  "campos_adicionais": {
+    "finalidade_emissao": "",
+    "modalidade_frete": ""
+  },
+  "perfis": [
+    {
+      "id": "preencher-identificador-unico",
+      "nome": "Preencher com a contabilidade",
+      "uf_destino": [],
+      "tipo_documento": [],
+      "presenca_comprador": [],
+      "campos_fiscais": {
+        "codigo_ncm": "",
+        "cfop": "",
+        "unidade_comercial": "",
+        "icms_origem": "",
+        "icms_situacao_tributaria": "",
+        "pis_situacao_tributaria": "",
+        "cofins_situacao_tributaria": ""
+      }
+    }
+  ]
+}

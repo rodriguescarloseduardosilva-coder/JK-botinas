@@ -24,7 +24,9 @@ Somente usuários cujo `app_metadata` contenha `{"loja_admin": true}` podem alte
 
 ## 4. Nota fiscal
 
-O pedido é salvo com `fiscal_status = nao_configurado`. O sistema não deve mostrar “nota fiscal emitida” antes de uma integração real retornar a autorização fiscal. Para automatizar isso, escolha um emissor compatível com a empresa (por exemplo, um ERP ou provedor de NF-e/NFC-e), faça o credenciamento fiscal e implemente a chamada no servidor usando as credenciais e o certificado da empresa. Não coloque certificado, chave secreta ou `service_role` no JavaScript público.
+O painel administrativo possui acesso ao módulo independente de NF-e, para vendas do site, loja e WhatsApp. A instalação, o emissor, a configuração segura e a homologação estão descritos em [FISCAL.md](FISCAL.md). Aplique a migração fiscal e configure o servidor antes de utilizar o módulo.
+
+A situação fiscal válida é consultada no módulo de notas. O campo antigo `fiscal_status` do pedido não é atualizado por esta integração. Não coloque certificado, chave secreta ou `service_role` no JavaScript público.
 
 ## 5. Teste rápido
 
@@ -32,4 +34,5 @@ O pedido é salvo com `fiscal_status = nao_configurado`. O sistema não deve mos
 - Crie um usuário, confirme o e-mail, e complete o perfil.
 - Adicione um produto, escolha o tamanho quando houver, informe o endereço e registre o pedido.
 - Confirme no painel administrativo; só então o estoque é baixado.
-- Verifique em “Meus pedidos” que o pedido continua marcado como aguardando configuração da emissão fiscal.
+- Abra o módulo de notas no painel para conferir a emissão. “Meus pedidos” ainda utiliza o campo fiscal antigo do pedido.
+

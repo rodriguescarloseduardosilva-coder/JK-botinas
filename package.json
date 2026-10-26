@@ -1,0 +1,9 @@
+{
+  "name": "jk-botinas-fiscal",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" },
+  "devDependencies": { "@electric-sql/pglite": "0.3.14", "jsdom": "26.1.0" }
+}
