@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth.css">
     <link rel="stylesheet" href="interactions.css">
+    <link rel="stylesheet" href="pix.css">
 </head>
 
 <body>
@@ -632,11 +633,11 @@ Personalidade, tradição e atitude em cada detalhe.
             <button
                 class="btn whatsapp"
                 id="checkoutButton"
-                onclick="checkoutWhatsApp()"
+                onclick="checkoutPix()"
             >
-                Finalizar pelo WhatsApp
+                Continuar com Pix
             </button>
-            <p class="checkout-note">Seu pedido será registrado para confirmação da loja. Frete e pagamento serão combinados no atendimento.</p>
+            <p class="checkout-note">Pagamento somente por Pix. A loja confirma a disponibilidade e o frete antes de liberar o valor final para pagamento.</p>
 
         </div>
 
@@ -651,6 +652,7 @@ Personalidade, tradição e atitude em cada detalhe.
     <div class="dialog-heading"><h2 id="addressTitle">Dados do pedido</h2><button type="button" data-close-dialog="addressDialog" aria-label="Fechar">×</button></div>
     <p class="auth-intro">Informe o endereço do comprador para o pedido e os dados fiscais.</p>
     <form id="addressForm" class="customer-form">
+        <div class="pix-method"><strong>Forma de pagamento: Pix</strong><span>A confirmação do pagamento é feita automaticamente pelo banco. O código Pix ficará disponível após a loja definir o frete.</span></div>
         <label>CEP<input name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" required></label>
         <label>Rua / avenida<input name="logradouro" autocomplete="address-line1" maxlength="150" required></label>
         <div class="form-columns"><label>Número<input name="numero" maxlength="150" required placeholder="Número ou S/N"></label><label>Complemento (opcional)<input name="complemento" autocomplete="address-line2" maxlength="150"></label></div>
@@ -658,19 +660,38 @@ Personalidade, tradição e atitude em cada detalhe.
         <div class="form-columns"><label>Cidade<input name="cidade" autocomplete="address-level2" maxlength="150" required></label><label>Estado<select name="uf" autocomplete="address-level1" required><option value="">Selecione</option></select></label></div>
         <p id="checkoutMessage" class="auth-message" role="status" aria-live="polite"></p>
         <button class="btn" type="submit">Registrar pedido</button>
-        <p class="auth-note">Registrar o pedido não confirma pagamento ou emissão de nota fiscal.</p>
+        <p class="auth-note">Você poderá consultar o Pix em “Meus pedidos”. A confirmação depende do recebimento pelo banco.</p>
     </form>
-    <div id="orderSuccess" hidden><h3>Pedido registrado</h3><p id="orderSuccessText" class="auth-intro"></p><a id="orderWhatsapp" class="btn whatsapp" target="_blank" rel="noopener noreferrer">Continuar no WhatsApp</a><p class="checkout-note">Aguarde a confirmação da loja. Seu pedido também está em “Meus pedidos”.</p></div>
+    <div id="orderSuccess" hidden><h3>Pedido registrado</h3><p id="orderSuccessText" class="auth-intro"></p><button id="orderPix" type="button" class="btn">Ver pagamento Pix</button><a id="orderWhatsapp" class="btn btn-outline" target="_blank" rel="noopener noreferrer">Combinar entrega com a loja</a><p class="checkout-note">Acompanhe o valor final e o pagamento em “Meus pedidos”.</p></div>
 </dialog>
 
 <dialog id="ordersDialog" class="customer-dialog" aria-labelledby="ordersTitle"><div class="dialog-heading"><h2 id="ordersTitle">Meus pedidos</h2><button type="button" data-close-dialog="ordersDialog" aria-label="Fechar">×</button></div><div id="customerOrders" aria-live="polite"></div></dialog>
+
+<dialog id="pixDialog" class="customer-dialog pix-dialog" aria-labelledby="pixTitle">
+    <div class="dialog-heading"><h2 id="pixTitle">Pagamento por Pix</h2><button id="pixClose" type="button" aria-label="Fechar pagamento">×</button></div>
+    <p id="pixOrder" class="pix-order"></p>
+    <p id="pixStatus"></p>
+    <strong id="pixTotal" class="pix-total"></strong>
+    <p id="pixBreakdown" class="pix-note"></p>
+    <img id="pixQRCode" class="pix-qr" alt="QR Code para pagar o pedido com Pix" hidden>
+    <div id="pixCodeArea" class="pix-code-area" hidden>
+        <label for="pixCode">Pix Copia e Cola</label>
+        <textarea id="pixCode" readonly spellcheck="false"></textarea>
+        <button id="pixCopy" class="btn btn-outline" type="button" disabled>Copiar código Pix</button>
+    </div>
+    <p id="pixExpiry" class="pix-note"></p>
+    <p id="pixMessage" class="auth-message" role="status" aria-live="polite"></p>
+    <button id="pixRefresh" class="btn" type="button">Atualizar pagamento</button>
+</dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="customer-utils.js"></script>
     <script src="auth.js"></script>
+    <script src="pix.js"></script>
     <script src="script.js"></script>
     <script src="interactions.js"></script>
 
 </body>
 </html>
+

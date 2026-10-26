@@ -1,0 +1,11 @@
+{
+  "name": "jk-botinas",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Loja JK Botinas com integração Pix BB no servidor",
+  "type": "commonjs",
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "qrcode": "1.5.4" },
+  "devDependencies": { "@electric-sql/pglite": "0.3.14" }
+}

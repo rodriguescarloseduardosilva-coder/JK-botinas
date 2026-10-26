@@ -1,0 +1,17 @@
+.pix-method { margin: 12px 0; padding: 14px 16px; border: 1px solid #d7c79f; border-radius: 8px; background: #fbf7ec; color: #3e3525; }
+.pix-method strong, .pix-method span { display: block; }
+.pix-method span { margin-top: 4px; font-size: 13px; line-height: 1.5; }
+.pix-dialog { max-width: 560px; }
+.pix-order { font-size: 12px; color: #666; overflow-wrap: anywhere; }
+.pix-total { display: block; font-size: 30px; margin: 12px 0 4px; color: #53401b; }
+.pix-qr { display: block; width: min(250px, 100%); height: auto; margin: 20px auto; background: #fff; }
+.pix-code-area label { display: block; margin-bottom: 6px; }
+.pix-code-area textarea { display: block; width: 100%; min-height: 100px; resize: vertical; padding: 10px; font-family: monospace; font-size: 12px; overflow-wrap: anywhere; border: 1px solid #aaa; border-radius: 6px; }
+.pix-code-area button, .pix-dialog > button { margin: 12px 0; }
+.pix-note { font-size: 13px; line-height: 1.6; color: #615b50; }
+.pix-admin-form { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 12px 0; }
+.pix-admin-form label { display: grid; gap: 5px; font-size: 13px; color: #ddd; }
+.pix-admin-form input { width: 145px; padding: 10px; border: 1px solid #666; border-radius: 5px; background: #111; color: #fff; }
+.pedido-card .pix-admin-status { margin: 12px 0; color: #e7d7ac; }
+.pix-dialog [hidden], .pix-code-area[hidden] { display: none; }
+@media (max-width: 480px) { .pix-admin-form label, .pix-admin-form input { width: 100%; } .pix-admin-form .btn { width: 100%; } }

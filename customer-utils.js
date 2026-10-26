@@ -46,11 +46,12 @@
     }
     const money = value => Number(value).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
     function whatsappMessage(order) {
-        return ['Olá! Quero confirmar meu pedido na JK Botinas.', `Pedido: ${order.id}`, '',
+        return ['Olá! Quero acompanhar meu pedido na JK Botinas.', `Pedido: ${order.id}`, '',
             ...order.itens.map(item => `${item.quantidade}x ${item.nome}${item.tamanho ? ' — tamanho ' + item.tamanho : ''}: ${money(item.subtotal)}`),
-            '', `Subtotal dos produtos: ${money(order.total)}`, 'Aguardo a confirmação de disponibilidade, frete e pagamento.'].join('\n');
+            '', `Subtotal dos produtos: ${money(order.total)}`, 'Forma de pagamento: Pix pelo site, com confirmação automática do banco.', 'Aguardo a confirmação de disponibilidade e frete.'].join('\n');
     }
     const api = {digits, validCPF, normalizePhone, validateProfile, validateAddress, escapeHTML, money, whatsappMessage, states};
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     else root.JKUtils = api;
 })(typeof window !== 'undefined' ? window : globalThis);
+

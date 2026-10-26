@@ -147,7 +147,7 @@ function removeItem(index) {
 function openCart() { if (!JKAuth.customer) return; $('cartOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
 function closeCart() { $('cartOverlay').classList.remove('active'); document.body.style.overflow = ''; }
 function closeCartOutside(event) { if (event.target.id === 'cartOverlay') closeCart(); }
-async function checkoutWhatsApp() {
+async function checkoutPix() {
     if (!cart.length || checkoutBusy) return;
     try { await JKAuth.requireCustomer(); } catch { return; }
     if (!cart.length) return;
@@ -192,7 +192,8 @@ async function submitOrder(event) {
             throw new Error('Não foi possível salvar o pedido. Seu carrinho foi mantido. Tente novamente.');
         }
         if (!order?.id || !Array.isArray(order.itens)) throw new Error('Não foi possível confirmar o registro. Tente novamente.');
-        $('orderSuccessText').textContent = `Pedido ${order.id}. Produtos: ${money(order.total)}. Aguardando confirmação da loja.`;
+        $('orderSuccessText').textContent = `Pedido ${order.id}. Produtos: ${money(order.total)}. Pagamento por Pix após a definição do frete pela loja.`;
+        $('orderPix').dataset.pagarPix = order.id;
         $('orderWhatsapp').href = whatsappURL(order);
         $('addressForm').hidden = true;
         $('orderSuccess').hidden = false;
@@ -212,7 +213,16 @@ async function showCustomerOrders() {
         const {data, error} = await supabaseClient.from('jk_pedidos').select('id,itens,total,status,fiscal_status,criado_em').eq('cliente_id', owner).order('criado_em', {ascending: false}).limit(30);
         if (JKAuth.customer?.id !== owner) return;
         if (error) throw error;
-        $('customerOrders').innerHTML = (data || []).map(order => `<article class="order-card"><p class="order-id">Pedido ${escapeHTML(order.id)}</p><p>${new Date(order.criado_em).toLocaleDateString('pt-BR')} · ${order.status === 'confirmado' ? 'Venda confirmada pela loja' : 'Aguardando confirmação'}</p>${order.itens.map(item => `<p>${item.quantidade}x ${escapeHTML(item.nome)}${item.tamanho ? ' · ' + escapeHTML(item.tamanho) : ''}</p>`).join('')}<p>Produtos: ${money(order.total)}</p><p>Nota fiscal: emissão ainda não configurada pela loja.</p><a class="btn btn-outline" target="_blank" rel="noopener noreferrer" href="${escapeHTML(whatsappURL(order))}">Falar sobre este pedido</a></article>`).join('') || '<p>Você ainda não tem pedidos.</p>';
+        const orders = data || [];
+        const pix = orders.length ? await supabaseClient.from('jk_pix_cobrancas')
+            .select('pedido_id,status,total,frete,desconto').in('pedido_id', orders.map(order => order.id)) : {data: []};
+        if (JKAuth.customer?.id !== owner) return;
+        const payments = new Map((pix.data || []).map(payment => [payment.pedido_id, payment]));
+        $('customerOrders').innerHTML = orders.map(order => {
+            const payment = payments.get(order.id);
+            const paymentText = pix.error ? 'Pagamento Pix temporariamente indisponível' : JKPix.label(payment?.status);
+            return `<article class="order-card"><p class="order-id">Pedido ${escapeHTML(order.id)}</p><p>${new Date(order.criado_em).toLocaleDateString('pt-BR')} · ${order.status === 'confirmado' ? 'Venda confirmada pela loja' : 'Aguardando confirmação'}</p>${order.itens.map(item => `<p>${item.quantidade}x ${escapeHTML(item.nome)}${item.tamanho ? ' · ' + escapeHTML(item.tamanho) : ''}</p>`).join('')}<p>Produtos: ${money(order.total)}</p>${payment ? `<p>Frete: ${money(payment.frete)} · Desconto: ${money(payment.desconto)}</p><p><strong>Total do pedido: ${money(payment.total)}</strong></p>` : ''}<p>Pix: ${escapeHTML(paymentText)}</p><p>Nota fiscal: emissão ainda não configurada pela loja.</p>${order.status !== 'confirmado' || payment ? `<button class="btn" type="button" data-pagar-pix="${escapeHTML(order.id)}">${payment?.status === 'paga' ? 'Ver pagamento' : 'Ver pagamento Pix'}</button>` : ''}<a class="btn btn-outline" target="_blank" rel="noopener noreferrer" href="${escapeHTML(whatsappURL(order))}">Falar sobre este pedido</a></article>`;
+        }).join('') || '<p>Você ainda não tem pedidos.</p>';
     } catch { if (JKAuth.customer?.id === owner) $('customerOrders').textContent = 'Não foi possível carregar seus pedidos. Feche esta janela e tente novamente.'; }
 }
 function favorite(button) { button.classList.toggle('active'); button.textContent = button.classList.contains('active') ? '♥' : '♡'; }
@@ -238,13 +248,16 @@ function clearCustomerState() {
     if (activeCustomerId) { try { sessionStorage.removeItem(cartKey()); sessionStorage.removeItem('jk_pending:' + activeCustomerId); } catch { /* Storage unavailable. */ } }
     activeCustomerId = null; cart = []; productsById.clear(); sizesById.clear(); pendingOrderKey = null;
     $('productsGrid').textContent = ''; $('customerOrders').textContent = ''; $('orderSuccessText').textContent = ''; $('orderWhatsapp').removeAttribute('href');
+    delete $('orderPix').dataset.pagarPix;
     $('addressForm').reset(); closeCart(); updateCart();
 }
 $('addressForm').addEventListener('submit', submitOrder);
 $('customerOrdersButton').addEventListener('click', showCustomerOrders);
+window.addEventListener('jk:pix-paid', () => { if ($('ordersDialog').open) showCustomerOrders(); });
 document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => $(button.dataset.closeDialog).close()));
 document.querySelector('#addressForm select[name="uf"]').insertAdjacentHTML('beforeend', JKUtils.states.map(state => `<option>${state}</option>`).join(''));
 window.addEventListener('jk:locked', clearCustomerState);
 window.addEventListener('jk:ready', event => { if (event.detail.changed || activeCustomerId !== JKAuth.customer?.id) loadProducts(); });
 JKAuth.ready.then(() => { if (JKAuth.customer && activeCustomerId !== JKAuth.customer.id) loadProducts(); });
 updateCart();
+
