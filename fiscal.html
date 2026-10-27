@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Notas fiscais | JK Botinas</title>
+    <link rel="stylesheet" href="fiscal.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="admin.html">JK BOTINAS <span>Notas fiscais</span></a><nav><a href="admin.html">Voltar ao painel</a><button id="fiscalLogout" type="button" hidden>Sair</button></nav></header>
+<main>
+    <section id="fiscalLogin" class="login-card">
+        <p class="eyebrow">Acesso da equipe</p><h1>Emissão de notas fiscais</h1>
+        <p>Entre com uma conta administrativa da JK Botinas.</p>
+        <form id="fiscalLoginForm">
+            <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
+            <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+            <button type="submit">Entrar</button>
+        </form>
+        <p id="fiscalAuthMessage" role="status" aria-live="polite">Verificando acesso…</p>
+    </section>
+
+    <div id="fiscalWorkspace" hidden>
+        <div class="page-heading"><div><p class="eyebrow">JK Botinas · Gestão fiscal</p><h1>Notas fiscais</h1><p>Inicie uma nota quando precisar, para uma venda do site, da loja ou do WhatsApp.</p></div></div>
+        <nav class="tabs" aria-label="Área fiscal"><button data-view="nova" type="button" aria-pressed="true">Nova nota</button><button data-view="historico" type="button" aria-pressed="false">Histórico</button><button data-view="configuracao" type="button" aria-pressed="false">Configuração fiscal</button></nav>
+        <p id="fiscalMessage" class="message" role="status" aria-live="polite"></p>
+
+        <section id="view-nova" class="view">
+            <div class="section-heading"><div><h2 id="draftTitle">Nova nota fiscal</h2><p id="draftState">Rascunho · Ainda não enviado à SEFAZ</p></div><button id="newDraft" class="secondary" type="button">Limpar e criar outra</button></div>
+            <p id="missingProfiles" class="notice" hidden>Complete a configuração da empresa e importe os perfis fiscais validados pela contabilidade antes de emitir.</p>
+            <form id="invoiceForm">
+                <fieldset><legend>Dados da venda</legend><div class="grid three">
+                    <label>Origem<select name="origem" required><option value="loja">Loja física</option><option value="whatsapp">WhatsApp</option><option value="site">Site</option></select></label>
+                    <label>Presença do comprador<select name="presenca_comprador" required><option value="1">Presencial</option><option value="2">Internet</option><option value="3">Teleatendimento</option><option value="9">Outra operação não presencial</option></select></label>
+                    <label>Consumidor final<select name="consumidor_final" required><option value="">Selecione</option><option value="1">Sim</option><option value="0">Não</option></select></label>
+                </div><label>Natureza da operação<input name="natureza_operacao" maxlength="60" placeholder="Conforme orientação da contabilidade" required></label><p id="originOrder" class="small"></p></fieldset>
+
+                <fieldset><legend>Destinatário</legend><div class="grid three">
+                    <label>Documento<select name="tipo_documento" required><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></select></label>
+                    <label>CPF ou CNPJ<input name="documento" inputmode="numeric" maxlength="18" required></label>
+                    <label>Nome / razão social<input name="nome" maxlength="150" autocomplete="name" required></label>
+                    <label>Inscrição estadual<input name="inscricao_estadual" maxlength="20"></label>
+                    <label>Contribuinte de ICMS<select name="indicador_ie" required><option value="">Selecione</option><option value="9">Não contribuinte</option><option value="1">Contribuinte</option><option value="2">Isento</option></select></label>
+                    <label>E-mail (opcional)<input name="email" type="email" maxlength="254"></label>
+                </div><div class="grid three">
+                    <label>CEP<input name="cep" inputmode="numeric" maxlength="9" required></label><label>UF<select name="uf" data-states required></select></label><label>Cidade<input name="municipio" maxlength="100" required></label>
+                    <label>Código IBGE do município<input name="codigo_municipio" inputmode="numeric" maxlength="7" required></label><label>Rua / avenida<input name="logradouro" maxlength="150" required></label><label>Número<input name="numero" maxlength="30" required></label>
+                    <label>Bairro<input name="bairro" maxlength="100" required></label>
+                </div></fieldset>
+
+                <fieldset><legend>Produtos da venda</legend><p class="small">Selecione o perfil fiscal adequado à operação e ao destino. Os códigos e tributos vêm da configuração aprovada pela contabilidade.</p><div id="invoiceItems" class="items"></div><button id="addInvoiceItem" class="secondary" type="button">Adicionar produto</button></fieldset>
+
+                <fieldset><legend>Valores e pagamento</legend><div class="grid three">
+                    <label>Frete (R$)<input name="frete" type="number" min="0" max="999999.99" step="0.01" value="0" required></label><label>Desconto total (R$)<input name="desconto" type="number" min="0" max="999999.99" step="0.01" value="0" required></label>
+                    <label>Forma de pagamento<select name="forma_pagamento" required><option value="">Selecione</option><option value="01">Dinheiro</option><option value="03">Cartão de crédito</option><option value="04">Cartão de débito</option><option value="15">Boleto bancário</option><option value="17">Pix</option><option value="99">Outros</option></select></label>
+                    <label>Integração do cartão (quando aplicável)<select name="tipo_integracao"><option value="">Não se aplica</option><option value="1">Integrado ao sistema</option><option value="2">Não integrado</option></select></label>
+                    <label>Condição de pagamento<select name="indicador_pagamento" required><option value="">Selecione</option><option value="0">À vista</option><option value="1">A prazo</option></select></label>
+                    <label hidden>CNPJ da credenciadora<input name="cnpj_credenciadora" inputmode="numeric" maxlength="18"></label>
+                    <label hidden>Número da autorização do cartão<input name="numero_autorizacao" maxlength="128"></label>
+                    <label hidden>Código da bandeira (opcional)<input name="bandeira_operadora" inputmode="numeric" maxlength="2" placeholder="Código fiscal informado pela credenciadora"></label>
+                    <label hidden>Descrição da forma de pagamento<input name="descricao_pagamento" maxlength="60"></label>
+                </div><p class="total">Valor comercial: <strong id="invoiceTotal">R$ 0,00</strong></p><p class="small">Produtos, frete e desconto. O total fiscal, incluindo os componentes tributários da operação, é conferido pelo servidor na revisão antes do envio.</p></fieldset>
+                <div class="actions"><button id="saveDraft" type="submit">Salvar rascunho</button><button id="reviewInvoice" class="secondary" type="button">Revisar para emitir</button></div>
+            </form>
+        </section>
+
+        <section id="view-historico" class="view" hidden><div class="section-heading"><div><h2 id="historyTitle">Histórico de notas</h2><p>Rascunhos, processamento, autorizações e rejeições.</p></div><div class="actions"><button id="allInvoices" class="secondary" type="button" hidden>Ver todas as notas</button><button id="reloadInvoices" class="secondary" type="button">Atualizar lista</button></div></div><label class="filter">Situação<select id="invoiceFilter"><option value="">Todas</option><option value="rascunho">Rascunhos</option><option value="enviando">Enviando</option><option value="processando">Processando</option><option value="autorizada">Autorizadas</option><option value="rejeitada">Rejeitadas</option><option value="cancelada">Canceladas</option></select></label><div id="invoiceHistory" class="history"></div><div class="pagination"><button id="previousInvoices" class="secondary" type="button">Anterior</button><span id="historyPage"></span><button id="nextInvoices" class="secondary" type="button">Próxima</button></div></section>
+
+        <section id="view-configuracao" class="view" hidden><h2>Configuração fiscal</h2><p>Cadastre o emitente e importe os perfis da operação fornecidos pela sua contabilidade. O certificado e o token de emissão são configurados no emissor e no servidor.</p>
+            <form id="issuerForm"><fieldset><legend>Emitente</legend><div class="grid three">
+                <label>CNPJ<input name="cnpj" inputmode="numeric" maxlength="18" required></label><label>Razão social<input name="nome" maxlength="150" required></label><label>Inscrição estadual<input name="inscricao_estadual" maxlength="20" required></label>
+                <label>UF<select name="uf" data-states required></select></label><label>Regime tributário<select name="regime_tributario" required><option value="1">Simples Nacional</option></select></label><label>CEP<input name="cep" inputmode="numeric" maxlength="9" required></label>
+                <label>Cidade<input name="municipio" maxlength="100" required></label><label>Rua / avenida<input name="logradouro" maxlength="150" required></label><label>Número<input name="numero" maxlength="30" required></label><label>Bairro<input name="bairro" maxlength="100" required></label>
+            </div></fieldset><fieldset><legend>Perfis fiscais da operação</legend><p>Os perfis devem especificar os produtos e a tributação aplicável à UF de destino, ao destinatário e à modalidade da venda. Inclua os campos adicionais de tributos exigidos para a operação.</p><label>Importar arquivo de perfis (.json)<input id="fiscalProfilesFile" type="file" accept=".json,application/json"></label><p id="profilesSummary" class="small">Nenhum perfil importado.</p><label class="checkbox"><input id="fiscalProfileReviewed" type="checkbox" required>Confirmei com a contabilidade os dados do emitente e os perfis fiscais para estas operações.</label></fieldset><div class="actions"><button type="submit">Salvar configuração fiscal</button><button id="discardFiscalConfig" type="button" class="secondary">Descartar alterações</button></div></form>
+        </section>
+    </div>
+</main>
+
+<dialog id="reviewDialog" aria-labelledby="reviewTitle"><div class="dialog-heading"><h2 id="reviewTitle">Revisar emissão</h2><button data-close="reviewDialog" class="icon" type="button" aria-label="Fechar">×</button></div><p id="reviewSummary"></p><div id="reviewDetails"></div><p class="notice">O envio gera uma solicitação fiscal no ambiente configurado. “Em processamento” ainda não é uma nota autorizada. A autorização depende do emissor e da SEFAZ.</p><label class="checkbox"><input id="reviewAccepted" type="checkbox">Conferi o destinatário, os itens, os valores e os perfis fiscais desta operação.</label><p id="reviewMessage" role="status"></p><button id="sendInvoice" type="button">Emitir nota fiscal</button></dialog>
+<dialog id="cancelDialog" aria-labelledby="cancelTitle"><div class="dialog-heading"><h2 id="cancelTitle">Solicitar cancelamento</h2><button data-close="cancelDialog" class="icon" type="button" aria-label="Fechar">×</button></div><p>O emissor e a SEFAZ verificam se o cancelamento ainda é permitido para esta nota.</p><label>Justificativa<textarea id="cancelReason" minlength="15" maxlength="255" rows="4" required></textarea></label><p id="cancelMessage" role="status"></p><button id="confirmCancel" type="button">Enviar solicitação de cancelamento</button></dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="fiscal.js"></script>
+</body>
+</html>

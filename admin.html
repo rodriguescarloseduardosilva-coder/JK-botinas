@@ -68,6 +68,12 @@
 
 
     <main class="admin-content">
+        <section class="pedidos-admin" aria-labelledby="fiscalSectionTitle">
+            <div class="pedidos-cabecalho">
+                <div><p class="pedidos-sobretitulo">Gestão fiscal</p><h2 id="fiscalSectionTitle">Notas fiscais</h2><p>Crie uma nota para uma venda da loja, do WhatsApp ou do site. Salve o rascunho, revise os dados e acompanhe a autorização.</p></div>
+                <a class="btn" href="fiscal.html">Abrir notas fiscais</a>
+            </div>
+        </section>
         <section class="pedidos-admin" aria-labelledby="pedidosTitulo">
             <div class="pedidos-cabecalho">
                 <div>
@@ -77,7 +83,7 @@
                 </div>
                 <button class="btn btn-outline" type="button" onclick="carregarPedidosAdmin()">Atualizar pedidos</button>
             </div>
-            <p class="pedidos-aviso-fiscal">Emissor fiscal ainda não configurado. Confirmar a venda atualiza o estoque; não cobra o cliente nem emite nota fiscal.</p>
+            <p class="pedidos-aviso-fiscal">Confirmar a venda atualiza o estoque. Para emitir uma nota e acompanhar a autorização, abra o módulo de notas fiscais.</p>
             <div class="pedidos-filtros">
                 <label for="filtroPedidos">Exibir</label>
                 <select id="filtroPedidos" onchange="paginaPedidos = 0; carregarPedidosAdmin();">
@@ -427,3 +433,4 @@
 
 </body>
 </html>
+

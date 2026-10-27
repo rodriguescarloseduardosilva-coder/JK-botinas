@@ -223,7 +223,8 @@ function montarPedidoAdmin(pedido) {
                         </tr>`).join("")}</tbody>
                     </table>
                 </div>
-                <p class="pedido-fiscal">Nota fiscal: ${pedido.fiscal_status === "nao_configurado" ? "aguardando configuração do emissor fiscal." : "situação fiscal indisponível; confira no emissor antes de informar o cliente."}</p>
+                <p class="pedido-fiscal">Consulte a emissão e a autorização no módulo de notas fiscais.</p>
+                <p><a class="btn btn-outline" href="fiscal.html?pedido=${encodeURIComponent(pedido.id)}">Criar rascunho de nota com estes dados</a></p>
                 ${pedido.confirmado_em ? `<p>Venda confirmada em ${escapeHtml(formatarDataPedido(pedido.confirmado_em))}.</p>` : ""}
             </details>
             ${aguardando ? `<div class="pedido-acoes">
@@ -295,7 +296,7 @@ async function confirmarPedidoAdmin(id, botao) {
         if (!data || data.status !== "confirmado") throw new Error("Confirmação não retornou um pedido confirmado.");
         await carregarPedidosAdmin();
         if (!adminAutorizado || verificacao !== verificacaoAdmin) return;
-        mensagem.textContent = "Venda confirmada e estoque atualizado. A emissão de nota fiscal ainda depende da configuração do emissor.";
+        mensagem.textContent = "Venda confirmada e estoque atualizado. Para emitir a nota, abra o módulo de notas fiscais.";
         carregarProdutosAdmin();
         carregarDashboardEstoque();
     } catch (error) {
@@ -2594,3 +2595,4 @@ async function carregarDashboardEstoque() {
     }
 
 }
+
